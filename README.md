@@ -1,39 +1,39 @@
-SSH/Web Security Portfolio – Web Vulnerable + Hardening
+🔐 Web Security Lab – SQL Injection & Hardening (Flask)
+🚀 Project Overview
 
-🚀 Description
+This project demonstrates the identification, exploitation, and mitigation of a SQL Injection vulnerability in a Flask web application.
 
-A web security project demonstrating how to identify and mitigate vulnerabilities in a Flask application.
+It contains:
 
-The project includes:
+🔴 A deliberately vulnerable version
 
-A vulnerable app to demonstrate real attacks (SQL Injection, debug mode, hardcoded credentials, etc.)
+🟢 A hardened secure version
 
-A hardened secure version with all mitigations applied
+📄 Professional vulnerability & hardening documentation
 
-Professional documentation of vulnerabilities and hardening
+📸 Visual proof of exploitation and mitigation
 
-Screenshots and visual evidence of before/after
+This project was developed for educational and portfolio purposes to demonstrate secure coding practices and web security concepts.
 
 🧱 Project Structure
 web-security-hardening/
 │
-├── vulnerable_app/          # Insecure app
+├── vulnerable_app/          # Intentionally vulnerable Flask app
 │   └── app.py
 │
-├── hardened_app/            # Secure app
+├── hardened_app/            # Secure version with mitigations
 │   └── app.py
 │
-├── docs/                    # Documentation
+├── docs/
 │   ├── vulnerability_report.md
-│   └── hardening_report.md
+│   ├── hardening_report.md
+│   └── screenshots/
 │
-└── README.md                # This file
+└── README.md
+🔴 Vulnerable Application
+Identified Vulnerabilities
 
-⚠️ Identified Vulnerabilities
-
-The vulnerable app included:
-
-SQL Injection
+SQL Injection (string concatenation in SQL queries)
 
 Hardcoded credentials
 
@@ -41,57 +41,113 @@ Debug mode enabled
 
 No input validation
 
-Plaintext passwords
+Plaintext password storage
 
-Documented in docs/vulnerability_report.md.
+SQL Injection Demonstration
+Injection Payload Used:
+Username: ' OR 1=1 --
+Password: anything
+Result:
 
-🛡️ Hardening / Improvements Applied
+✅ Login successful without valid credentials
 
-The hardened version implements:
+The injected query becomes:
 
-Parameterized queries (SQLi mitigated)
+SELECT * FROM users 
+WHERE username = '' OR 1=1 --' 
+AND password = 'anything'
 
-Removed hardcoded credentials
+Because 1=1 is always TRUE, authentication is bypassed.
+
+🟢 Hardened Application
+Security Improvements Applied
+
+Parameterized queries (prepared statements)
+
+Password hashing with bcrypt
 
 Debug mode disabled
 
-Input validation and sanitization
+Input validation
 
-Passwords hashed with bcrypt
+Removal of hardcoded credentials
 
 Basic access control
 
-Documented in docs/hardening_report.md.
+Same Injection Attempt
+Username: ' OR 1=1 --
+Password: anything
+Result:
 
-🎮 How to Use
+❌ Login failed
 
-Install dependencies:
+Why?
 
+The query uses parameterized statements (?)
+
+User input is treated as literal text
+
+SQL logic is not altered
+
+Password verification uses bcrypt
+
+The injection is safely neutralized.
+
+📸 Visual Demonstration
+🔴 Vulnerable – Authentication Bypass
+
+→ Login successful using SQL Injection.
+
+🟢 Hardened – Injection Blocked
+
+→ Same payload rejected.
+
+🎮 How to Run
+Install dependencies
 python -m pip install flask bcrypt
-
-Run the vulnerable app:
-
+Run Vulnerable Version
 cd vulnerable_app
 python app.py
 
-Open your browser:
+Open:
 
 http://127.0.0.1:5000
-
-To test the hardened version:
-
+Run Hardened Version
 cd hardened_app
 python app.py
-📸 Visual Example
 
-Before / After: Vulnerable vs Hardened App
+Open:
 
-← replace with real screenshot or GIF of the project
+http://127.0.0.1:5000
+📚 Skills Demonstrated
 
-📚 Learning & Skills
+SQL Injection exploitation
 
-- Web vulnerability detection and exploitation
-- SQL Injection and mitigation
-- Security best practices in Flask
-- Professional documentation (vulnerability + hardening reports)
-- Portfolio-ready technical project
+Secure coding in Flask
+
+Parameterized query implementation
+
+Password hashing with bcrypt
+
+Input validation techniques
+
+Security documentation & risk assessment
+
+Practical before/after mitigation demonstration
+
+🎯 Learning Outcome
+
+This project demonstrates:
+
+How SQL Injection works
+
+How authentication bypass occurs
+
+How to properly mitigate SQL Injection
+
+The importance of secure development practices
+
+⚠️ Disclaimer
+
+This project is for educational purposes only.
+The vulnerable application is intentionally insecure and should never be used in production environments.

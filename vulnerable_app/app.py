@@ -1,57 +1,62 @@
-from flask import Flask, request
+from flask import Flask, request, render_template_string
 import sqlite3
 
 app = Flask(__name__)
-app.config['DEBUG'] = True  # Debug activado (vulnerable)
+app.config['DEBUG'] = True  # Mantenemos debug activado para demostrar vulnerabilidad
 
-# Hardcoded credentials (vulnerable)
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "password123"
+# In-memory SQLite database
+conn = sqlite3.connect(':memory:', check_same_thread=False)
+cursor = conn.cursor()
 
-def init_db():
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            password TEXT
-        )
-    ''')
-    cursor.execute("INSERT INTO users (username, password) VALUES ('admin', 'password123')")
-    conn.commit()
-    conn.close()
+# Create users table
+cursor.execute('''
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    password TEXT
+)
+''')
+conn.commit()
 
-@app.route('/')
-def home():
-    return '''
-        <h2>Login</h2>
-        <form method="POST" action="/login">
-            Username: <input type="text" name="username"><br>
-            Password: <input type="text" name="password"><br>
-            <input type="submit" value="Login">
-        </form>
-    '''
+# Insert admin user (plaintext password)
+cursor.execute("INSERT INTO users (username, password) VALUES ('admin', 'password123')")
+conn.commit()
 
-@app.route('/login', methods=['POST'])
+# HTML template
+login_page = '''
+<!doctype html>
+<title>Vulnerable Login</title>
+<h2>Login (Vulnerable)</h2>
+<form method="POST">
+  Username: <input type="text" name="username"><br>
+  Password: <input type="text" name="password"><br>
+  <input type="submit" value="Login">
+</form>
+<p>{{ message }}</p>
+'''
+
+@app.route('/', methods=['GET', 'POST'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
+    message = ""
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
 
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
+        # ❌ VULNERABLE: input concatenado directamente
+        query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+        print("Executing query:", query)  # para ver la inyección en consola
 
-    # 🚨 VULNERABLE SQL QUERY (SQL Injection possible)
-    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
-    result = cursor.execute(query).fetchone()
+        try:
+            cursor.execute(query)
+            result = cursor.fetchone()
+            if result:
+                message = "Login successful!"
+            else:
+                message = "Login failed!"
+        except Exception as e:
+            message = f"SQL Error: {e}"
 
-    conn.close()
-
-    if result:
-        return "Login successful!"
-    else:
-        return "Login failed."
+    return render_template_string(login_page, message=message)
 
 if __name__ == '__main__':
-    init_db()
     app.run()
